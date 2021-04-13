@@ -1,0 +1,24 @@
+language: generic
+
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - docker build -t psw261/react-test-app -f ./frontend/Dockerfile.dev ./frontend
+
+script:
+  - docker run -e CI=true psw261/react-test-app npm test
+
+after_success:
+  - docker build -t psw261/docker-frontend ./frontend
+  - docker build -t psw261/docker-backend ./backend
+  - docker build -t psw261/docker-nginx ./nginx
+
+  - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_ID" --password-stdin
+
+  
+  - docker push psw261/docker-frontend
+  - docker push psw261/docker-backend
+  - docker push psw261/docker-nginx
